@@ -1,10 +1,12 @@
-import MockBuilder from '../mockBuilder';
+import {RockitBuilder} from '../index';
 import ExampleImplementation from '../exampleImplementation';
 
-describe('Axios Mock Test', () => {
+describe('Rockit Test', () => {
     it('gets correct responses', () => {
-        const builder = new MockBuilder((error) => {
-            fail(error);
+        const builder = new RockitBuilder({
+            onFail: (error) => {
+                fail(error);
+            }
         });
         
         builder.onGet('some/path')
@@ -30,13 +32,15 @@ describe('Axios Mock Test', () => {
             expect(response['username']).toBe('fisk');
             expect(response['id']).toBe('1234');
         }).catch(error => {
-            fail('The test failed, expected success response');
+            fail('Expected success response');
         });
     });
 
     it('POSTS correct request and returns correct response', () => {
-        const builder = new MockBuilder((error) => {
-            fail(error);
+        const builder = new RockitBuilder({
+            onFail: (error) => {
+                fail(error);
+            }
         });
         
         builder.onPost('some/path')
@@ -54,7 +58,7 @@ describe('Axios Mock Test', () => {
         const mock = new ExampleImplementation(builder.build());
         
         mock.post('some/path', {'username':'johndoe'}).then(response => {
-            fail('The test failed, expected fail response');
+            fail('Expected fail response');
         }).catch(error => {
         });
         
@@ -62,7 +66,51 @@ describe('Axios Mock Test', () => {
             expect(response['username']).toBe('johndoe');
             expect(response['id']).toBe('1234');
         }).catch(error => {
-            fail('The test failed, expected success response');
+            fail('Expected success response');
         });
+    });
+
+    it('matches pattern on url', () => {
+        const builder = new RockitBuilder({
+            onFail: (error) => {
+                fail(error);
+            }
+        });
+
+        builder.onGet('/some/path/{}/account').nextResponse((response) => {
+            response['currency'] = 'SEK';
+            response['balance'] = 200;
+            return response;
+        });
+
+        const mock = new ExampleImplementation(builder.build());
+
+        mock.get('/some/path/12398978-213423-2342/account').then(response => {
+            expect(response['currency']).toBe('SEK');
+            expect(response['balance']).toBe(200);
+        }).catch((error) => {
+            fail(error)
+        });
+    });
+
+    it('fails when something in the mock setup is wrong', () => {
+        let failure = null;
+        const builder = new RockitBuilder({
+            onFail: (error) => {
+                failure = error;
+            }
+        });
+
+        builder.onGet('/some/path/{}/account').nextResponse((response) => {
+            response['currency'] = 'SEK';
+            response['balance'] = 200;
+            // return response; <-- the issue
+        });
+
+        const mock = new ExampleImplementation(builder.build());
+
+        mock.get('/some/path/12398978-213423-2342/account');
+
+        expect(failure.toString()).toBe('Error: GET/some/path/12398978-213423-2342/account No response, make sure the response method actually returns the response.');
     });
 });

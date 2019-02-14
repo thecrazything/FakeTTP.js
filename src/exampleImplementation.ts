@@ -1,9 +1,9 @@
-import RequestMocker from "./requestMocker";
+import {Rockit} from "./index";
 
 export default class ExampleImplementation {
-    private mocker: RequestMocker;
+    private mocker: Rockit;
 
-    constructor (mocker: RequestMocker) {
+    constructor (mocker: Rockit) {
         this.mocker = mocker;
     }
 
