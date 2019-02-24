@@ -10,11 +10,11 @@ describe('Rockit Test', () => {
         });
         
         builder.onGet('some/path')
-            .nextException(400, (response) => {
+            .except(400, (response) => {
                 response['error'] = 'Username required';
                 return response;
             })
-            .nextResponse((response) => {
+            .respond((response) => {
                 response['username'] = 'fisk';
                 response['id'] = '1234';
                 return response;
@@ -44,11 +44,11 @@ describe('Rockit Test', () => {
         });
         
         builder.onPost('some/path')
-            .nextException(500, (response, request) => {
+            .except(500, (response, request) => {
                 expect(request['username']).toBe('johndoe');
                 return response;
             })
-            .nextResponse((response, request) => {
+            .respond((response, request) => {
                 expect(request['username']).toBe('johndoe');
                 response['username'] = 'johndoe';
                 response['id'] = '1234';
@@ -77,7 +77,7 @@ describe('Rockit Test', () => {
             }
         });
 
-        builder.onGet('/some/path/{}/account').nextResponse((response) => {
+        builder.onGet('/some/path/{}/account').respond((response) => {
             response['currency'] = 'SEK';
             response['balance'] = 200;
             return response;
@@ -101,7 +101,7 @@ describe('Rockit Test', () => {
             }
         });
 
-        builder.onGet('/some/path/{}/account').nextResponse((response) => {
+        builder.onGet('/some/path/{}/account').respond((response) => {
             response['currency'] = 'SEK';
             response['balance'] = 200;
             // return response; <-- the issue

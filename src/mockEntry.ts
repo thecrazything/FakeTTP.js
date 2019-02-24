@@ -1,6 +1,6 @@
 export default class MockEntry {
     private responses : Array<any> = [];
-    private defaultResponse : any;
+    private mDefaultResponse : any;
 
     private modelResponse:  any;
     private modelRequest: any;
@@ -13,27 +13,27 @@ export default class MockEntry {
         this.endpoint = endpoint;
     }
 
-    public response(responseBuilder : (response, request) => any, delay: number = null) : MockEntry {
-        this.defaultResponse = {status: 200, responseBuilder, delay: delay};
+    public respondDefault(responseBuilder : (response, request) => any, delay: number = null) : MockEntry {
+        this.mDefaultResponse = {status: 200, responseBuilder, delay: delay};
         return this;
     }
 
-    public nextResponse(responseBuilder : (response, request) => any, delay: number = null) : MockEntry {
+    public respond(responseBuilder : (response, request) => any, delay: number = null) : MockEntry {
         this.responses.push({status: 200, responseBuilder, delay: delay});
         return this;
     }
 
-    public setException(status: number, responseBuilder : (response, request) => any, delay: number = null) : MockEntry {
+    public exceptDefault(status: number, responseBuilder : (response, request) => any, delay: number = null) : MockEntry {
         if (status == 200) {
             this.throwException(new Error("Exception can't have status 200, use response."));
         }
-        this.defaultResponse = {status: status, responseBuilder, delay: delay};
+        this.mDefaultResponse = {status: status, responseBuilder, delay: delay};
         return this;
     }
 
-    public nextException(status: number, responseBuilder : (response, request) => any, delay: number = null) : MockEntry {
+    public except(status: number, responseBuilder : (response, request) => any, delay: number = null) : MockEntry {
         if (status == 200) {
-            this.throwException(new Error("Exception can't have status 200, use nextResponse."));
+            this.throwException(new Error("Exception can't have status 200, use respond."));
         }
         this.responses.push({status: status, responseBuilder, delay: delay});
         return this;
@@ -55,7 +55,7 @@ export default class MockEntry {
         }
         let response = this.responses.shift();
         if (!response) {
-            response = this.defaultResponse;
+            response = this.mDefaultResponse;
         }
 
         if(!response) {
